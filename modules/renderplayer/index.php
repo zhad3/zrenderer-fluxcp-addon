@@ -1,9 +1,28 @@
 <?php
 if (!defined('FLUX_ROOT')) exit;
 
-require_once Flux::config('ZrenApi');
+require_once Flux::config('Zren.Api');
+require_once Flux::config('Zren.Util');
+
+ob_clean();
 
 $charName = preg_replace('/[^0-9a-zA-Z ]/', '', $params->get('name'));
+
+if (Flux::config('Zren.cache.enabled')) {
+    try {
+        if (ZrenUtil::serveCachedImage($charName)) {
+            // All good
+            exit;
+        } else {
+            // Cache doesn't exist. Set headers anyway for newly generated image
+            ZrenUtil::setCacheHeaders();
+        }
+    } catch (ZrenException $e) {
+        ZrenUtil::logExceptionToFile($e);
+        ZrenUtil::serveDefaultImage();
+        exit;
+    }
+}
 
 $col = "`class`, `hair`, `hair_color`, `clothes_color`, `body`, " .
     "`weapon`, `shield`, `head_top`, `head_mid`, `head_bottom`, " .
@@ -18,24 +37,29 @@ $sth->execute(array($charName));
 $char = $sth->fetch();
 
 if ($char) {
-    echo "name: " . $charName . "<br>";
-    echo "class: " . $char->class . "<br>";
-    echo "hair: " . $char->hair . "<br>";
-    echo "hair_color: " . $char->hair_color . "<br>";
-    echo "clothes_color: " . $char->clothes_color . "<br>";
-    echo "body: " . $char->body . "<br>";
-    echo "weapon: " . $char->weapon . "<br>";
-    echo "shield: " . $char->shield . "<br>";
-    echo "head_top: " . $char->head_top . "<br>";
-    echo "head_mid: " . $char->head_mid . "<br>";
-    echo "head_bottom: " . $char->head_bottom . "<br>";
-    echo "robe: " . $char->robe . "<br>";
-    echo "sex: " . $char->sex . "<br>";
 
-    $result = ZrenApi::render($char);
-    echo 'Response: <pre>' . $result . '</pre>';
+    try {
+        $result = ZrenApi::render($char, "200x200+75+175");
+
+        if ($result == null) {
+            ZrenUtil::serveDefaultImage();
+            exit;
+        }
+
+        if (Flux::config('Zren.cache.enabled')) {
+            ZrenUtil::cacheImage($charName, $result);
+        }
+        ZrenUtil::serveImage($result);
+        exit;
+
+    } catch (ZrenException $e) {
+        ZrenUtil::logExceptionToFile($e);
+        ZrenUtil::serveDefaultImage();
+        exit;
+    }
 } else {
-    echo "Char not found";
+    ZrenUtil::serveDefaultImage();
+    exit;
 }
 
 exit;
