@@ -8,9 +8,20 @@ ob_clean();
 
 $charName = preg_replace('/[^0-9a-zA-Z ]/', '', $params->get('name'));
 
+$groupName = '';
+if ($params->get('group') !== null) {
+    $groupName = preg_replace('/[^0-9a-zA-Z]/', '', $params->get('group'));
+    if (ZrenUtil::isValidGroup($groupName)) {
+        ZrenUtil::redirectIfDefaultGroup($charName, $groupName);
+    } else {
+        ZrenUtil::serveDefaultImage();
+        exit;
+    }
+}
+
 if (Flux::config('Zren.cache.enabled')) {
     try {
-        if (ZrenUtil::serveCachedImage($charName)) {
+        if (ZrenUtil::serveCachedImage($charName, $groupName)) {
             // All good
             exit;
         } else {
@@ -39,7 +50,7 @@ $char = $sth->fetch();
 if ($char) {
 
     try {
-        $result = ZrenApi::render($char, "200x200+75+175");
+        $result = ZrenApi::render($char, $groupName);
 
         if ($result == null) {
             ZrenUtil::serveDefaultImage();
@@ -47,7 +58,7 @@ if ($char) {
         }
 
         if (Flux::config('Zren.cache.enabled')) {
-            ZrenUtil::cacheImage($charName, $result);
+            ZrenUtil::cacheImage($charName, $result, $groupName);
         }
         ZrenUtil::serveImage($result);
         exit;

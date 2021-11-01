@@ -16,9 +16,13 @@ return array(
         'rendering' => array(
             'default' => array(
                 'canvas' => '150x150+75+125',
-                'action' => 'ATTACKREADY',
-                'direction' => 7,
-                'headdirection' => 0
+                'action' => 'ATTACK',
+                'direction' => 0,
+                'headdir' => 0
+            ),
+            'pvp' => array(
+                'canvas' => '150x150+75+125',
+                'action' => 'ATTACKREADY'
             )
         ),
 

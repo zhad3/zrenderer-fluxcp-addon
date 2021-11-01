@@ -4,8 +4,14 @@ require_once dirname(__FILE__).'/exception.php';
 
 class ZrenUtil {
 
-    public static function cacheImage($charName, $imageData) {
-        $cachedFilename = ZrenUtil::getCachedFilename($charName);
+    public static function cacheImage($charName, $imageData, $group = "") {
+        $cachedFilename = ZrenUtil::getCachedFilename($charName, $group);
+
+        $directory = dirname($cachedFilename);
+        if (!file_exists($directory)) {
+            mkdir($directory);
+        }
+
         file_put_contents($cachedFilename, $imageData);
     }
 
@@ -14,8 +20,8 @@ class ZrenUtil {
         echo $imageData;
     }
 
-    public static function serveCachedImage($charName) {
-        $cachedFilename = ZrenUtil::getCachedFilename($charName);
+    public static function serveCachedImage($charName, $groupName = '') {
+        $cachedFilename = ZrenUtil::getCachedFilename($charName, $groupName);
         if (file_exists($cachedFilename)) {
             $lastModified = filemtime($cachedFilename);
             $expires = ZrenUtil::setCacheHeaders($lastModified);
@@ -63,8 +69,26 @@ class ZrenUtil {
         return $expires;
     }
 
-    public static function getCachedFilename($charName) {
-        return FLUX_DATA_DIR.'/player/'.$charName.'.png';
+    public static function getCachedFilename($charName, $group = "") {
+        if ($group != "") {
+            return FLUX_DATA_DIR.'/player/'.$group.'/'.$charName.'.png';
+        } else {
+            return FLUX_DATA_DIR.'/player/'.$charName.'.png';
+        }
+    }
+
+    public static function isValidGroup($groupName) {
+        if ($groupName == '' || Flux::config('Zren.rendering.'.$groupName) == null) {
+            return false;
+        }
+        return true;
+    }
+
+    public static function redirectIfDefaultGroup($charName, $groupName) {
+        if ($groupName == 'default') {
+            header('Location: /data/player/'.$charName.'.png');
+            exit;
+        }
     }
 
     public static function logExceptionToFile($e) {

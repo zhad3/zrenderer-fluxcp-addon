@@ -6,12 +6,12 @@ require_once dirname(__FILE__).'/weaponAlternateAttack.php';
 
 class ZrenApi {
 
-    public static function render($charData, $canvas) {
+    public static function render($charData, $groupName = '') {
         if ($charData->class == null) {
             return null;
         }
 
-        $payload = ZrenApi::dataToJsonPayload($charData, $canvas);
+        $payload = ZrenApi::dataToJsonPayload($charData, $groupName);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, ZrenApi::renderUri());
@@ -43,10 +43,18 @@ class ZrenApi {
         return $result;
     }
 
-    private static function dataToJsonPayload($charData, $canvas) {
+    private static function dataToJsonPayload($charData, $groupName = '') {
+        $groupName = $groupName === '' ? 'default' : $groupName;
+        $groupConfig = Flux::config('Zren.rendering.'.$groupName);
+
+        $spriteType = $groupConfig->get('type');
+        $action = $groupConfig->get('action');
+        $direction = intval($groupConfig->get('direction'));
+        $headdir = intval($groupConfig->get('headdir'));
+        $canvas = $groupConfig->get('canvas');
+
         $gender = $charData->sex == 'M' ? 1 : 0;
         $weapon = intval($charData->weapon);
-        $action = Flux::config('Zren.rendering.default.action');
         $actions = require dirname(__FILE__).'/actions.php';
 
         if ($action == 'ATTACK') {
@@ -57,25 +65,39 @@ class ZrenApi {
             }
         }
 
-        $actionNum = $actions["PLAYER"][$action] * 8 + (Flux::config('Zren.rendering.default.direction') % 8);
+        if ($spriteType === null) {
+            $spriteType = 'PLAYER';
+        }
+
+        $actionNum = $actions[$spriteType][$action] * 8 + ($direction % 8);
 
         $requestData = array(
-            "job" => array("$charData->class"),
-            "action" => $actionNum,
-            "gender" => $gender,
-            "head" => intval($charData->hair),
-            "outfit" => intval($charData->body),
-            "garment" => intval($charData->robe),
-            "weapon" => $weapon,
-            "shield" => intval($charData->shield),
-            "bodyPalette" => intval($charData->clothes_color) - 1,
-            "headPalette" => intval($charData->hair_color) - 1,
-            "headdir" => Flux::config('Zren.rendering.default.headdirection'),
-            "headgear" => array(intval($charData->head_top), intval($charData->head_mid), intval($charData->head_bottom)),
-            "canvas" => Flux::config('Zren.rendering.default.canvas')
+            "job" => array("$charData->class")
         );
+        ZrenApi::addToRequest($requestData, "action", $actionNum, 0);
+        ZrenApi::addToRequest($requestData, "gender", $gender, 1);
+        ZrenApi::addToRequest($requestData, "head", intval($charData->hair), 0);
+        ZrenApi::addToRequest($requestData, "outfit", intval($charData->body), 0);
+        ZrenApi::addToRequest($requestData, "garment", intval($charData->robe), 0);
+        ZrenApi::addToRequest($requestData, "weapon", $weapon, 0);
+        ZrenApi::addToRequest($requestData, "shield", intval($charData->shield), 0);
+        ZrenApi::addToRequest($requestData, "bodyPalette", intval($charData->clothes_color) - 1, -1);
+        ZrenApi::addToRequest($requestData, "headPalette", intval($charData->hair_color) - 1, -1);
+        ZrenApi::addToRequest($requestData, "headdir", $headdir, 0);
+        ZrenApi::addToRequest($requestData, "headgear", array(
+            intval($charData->head_top),
+            intval($charData->head_mid),
+            intval($charData->head_bottom)), [0,0,0]);
+        ZrenApi::addToRequest($requestData, "canvas", $canvas, null);
 
         return json_encode($requestData);
+    }
+
+    private static function addToRequest(&$requestData, $name, $value, $default) {
+        if ($value === null || $value === $default) {
+            return;
+        }
+        $requestData[$name] = $value;
     }
 
     private static function renderUri() {
