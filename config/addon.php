@@ -28,6 +28,12 @@ return array(
 
         'Api' => dirname(dirname(__FILE__)).'/lib/api.php',
         'Util' => dirname(dirname(__FILE__)).'/lib/util.php'
+    ),
+
+    'MenuItems' => array(
+        'Misc. Stuff' => array(
+            'Zrenderer' => array('module' => 'renderplayer', 'action' => 'admin')
+        )
     )
 )
 ?>
