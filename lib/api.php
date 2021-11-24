@@ -81,6 +81,22 @@ class ZrenApi {
         return ZrenApi::sendRequest($ch);
     }
 
+    public static function tokenInfo() {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::tokenInfoUri());
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        return ZrenApi::sendRequest($ch);
+    }
+
+    public static function tokens() {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::tokensUri());
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        return ZrenApi::sendRequest($ch);
+    }
+
     private static function sendRequest($ch) {
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -136,6 +152,13 @@ class ZrenApi {
         return ZrenApi::buildUriWithAccessToken('/admin/health', Flux::config('Zren.AccessTokens.ADMIN'));
     }
 
+    private static function tokenInfoUri() {
+        return ZrenApi::buildUriWithAccessToken('/token/info', Flux::config('Zren.AccessTokens.ADMIN'));
+    }
+
+    private static function tokensUri() {
+        return ZrenApi::buildUriWithAccessToken('/admin/tokens', Flux::config('Zren.AccessTokens.ADMIN'));
+    }
 }
 
 ?>
