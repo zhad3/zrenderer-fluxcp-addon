@@ -32,7 +32,12 @@ return array(
 
     'MenuItems' => array(
         'Misc. Stuff' => array(
-            'Zrenderer' => array('module' => 'renderplayer', 'action' => 'admin')
+            'Zrenderer' => array('module' => 'renderplayer', 'action' => 'health')
+        )
+    ),
+    'SubMenuItems' => array(
+        'renderplayer' => array(
+            'health' => 'Health'
         )
     )
 )

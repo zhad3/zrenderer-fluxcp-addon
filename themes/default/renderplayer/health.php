@@ -1,5 +1,5 @@
 <?php if (!defined('FLUX_ROOT')) exit; ?>
-<h2>Zrenderer</h2>
+<h2>Zrenderer &mdash; Health</h2>
 <?php if (isset($_POST['submit'])): ?>
 <?php if ($error): ?>
 <p>
@@ -23,7 +23,7 @@
 <?php endif?>
 <?php endif ?>
 <p>
-    <form method="post" action="<?php echo $this->url('renderplayer', 'admin') ?>">
+    <form method="post" action="<?php echo $this->url('renderplayer', 'health') ?>">
         <input type="submit" name="submit" onclick="this.value='Getting health...';" class="button" value="Check health"/>
     </form>
 </p>
