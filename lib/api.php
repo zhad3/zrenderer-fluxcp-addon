@@ -73,6 +73,17 @@ class ZrenApi {
         return json_encode($requestData);
     }
 
+    public static function modifyToken($id, $tokenData) {
+        $payload = json_encode($tokenData);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::modifyTokenUri($id));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($tokenData));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+        return ZrenApi::sendRequest($ch);
+    }
+
     public static function health() {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, ZrenApi::healthUri());
@@ -116,6 +127,8 @@ class ZrenApi {
         if ($httpCode != 200) {
             if ($responseJson != null && isset($responseJson->statusMessage)) {
                 throw new ZrenException($responseJson->statusMessage);
+            } elseif ($result != null) {
+                throw new ZrenException($result);
             } else {
                 throw new ZrenException($possibleErrorMsg);
             }
@@ -158,6 +171,11 @@ class ZrenApi {
 
     private static function tokensUri() {
         return ZrenApi::buildUriWithAccessToken('/admin/tokens', Flux::config('Zren.AccessTokens.ADMIN'));
+    }
+
+    private static function modifyTokenUri($id) {
+        $id = preg_replace("/[^0-9]/", "", $id);
+        return ZrenApi::buildUriWithAccessToken('/admin/tokens/' . $id, Flux::config('Zren.AccessTokens.ADMIN'));
     }
 }
 

@@ -12,6 +12,8 @@ if (isset($_POST['submit'])) {
     } catch (ZrenException $err) {
         $error = true;
         $errorMessage = $err->getMessage();
+        $health = new \stdClass();
+        $health->up = false;
     }
 }
 

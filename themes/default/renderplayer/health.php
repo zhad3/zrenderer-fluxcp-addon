@@ -2,10 +2,10 @@
 <h2>Zrenderer &mdash; Health</h2>
 <?php if (isset($_POST['submit'])): ?>
 <?php if ($error): ?>
-<p>
+<p class="notice">
     <strong>An error occurred:</strong> <?php echo $errorMessage ?>
 </p>
-<?php else: ?>
+<?php endif ?>
 <table class="vertical-table">
     <tbody>
         <tr>
@@ -20,7 +20,6 @@
         <?php endif ?>
     </tbody>
 </table>
-<?php endif?>
 <?php endif ?>
 <p>
     <form method="post" action="<?php echo $this->url('renderplayer', 'health') ?>">
