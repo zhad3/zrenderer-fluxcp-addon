@@ -77,9 +77,31 @@ class ZrenApi {
         $payload = json_encode($tokenData);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, ZrenApi::modifyTokenUri($id));
+        curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($tokenData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+        return ZrenApi::sendRequest($ch);
+    }
+
+    public static function createToken($tokenData) {
+        $payload = json_encode($tokenData);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::createTokenUri());
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($tokenData));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+        return ZrenApi::sendRequest($ch);
+    }
+
+    public static function revokeToken($id) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::revokeTokenUri($id));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         return ZrenApi::sendRequest($ch);
     }
@@ -174,6 +196,15 @@ class ZrenApi {
     }
 
     private static function modifyTokenUri($id) {
+        $id = preg_replace("/[^0-9]/", "", $id);
+        return ZrenApi::buildUriWithAccessToken('/admin/tokens/' . $id, Flux::config('Zren.AccessTokens.ADMIN'));
+    }
+
+    private static function createTokenUri() {
+        return ZrenApi::buildUriWithAccessToken('/admin/tokens', Flux::config('Zren.AccessTokens.ADMIN'));
+    }
+
+    private static function revokeTokenUri($id) {
         $id = preg_replace("/[^0-9]/", "", $id);
         return ZrenApi::buildUriWithAccessToken('/admin/tokens/' . $id, Flux::config('Zren.AccessTokens.ADMIN'));
     }

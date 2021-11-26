@@ -38,7 +38,8 @@ return array(
     'SubMenuItems' => array(
         'renderplayer' => array(
             'health' => 'Health',
-            'tokens' => 'Access tokens'
+            'tokens' => 'Access tokens',
+            'newtoken' => 'New token'
         )
     )
 )

@@ -64,6 +64,40 @@ function toggleToken(btn) {
         }
     }
 }
+
+function revokeToken(id, btn) {
+    if (!confirm("Are you sure you want to delete the token?")) {
+        return false;
+    }
+    btn.setAttribute("disabled", "disabled");
+
+    const removeRow = (id) => {
+        const row = document.getElementById("row__token-" + id);
+        row.children[0].innerHTML = "";
+        row.children[1].innerHTML = "Deleted";
+        row.children[2].innerHTML = "";
+        row.children[3].innerHTML = "";
+        row.children[4].innerHTML = "";
+        row.children[5].innerHTML = "";
+    };
+
+    const req = new XMLHttpRequest();
+    req.addEventListener("load", (ev) => {
+        if (req.status === 200) {
+            removeRow(id);
+        } else {
+            btn.removeAttribute("disabled");
+            alert("Error: " + (req.responseText ? req.responseText : "Unknown error"));
+        }
+    });
+    req.addEventListener("error", (ev) => {
+        btn.removeAttribute("disabled");
+        alert("Error: " + (req.responseText ? req.responseText : "Unknown error"));
+    });
+    req.open("GET", "<?php echo $this->url('renderplayer', 'revoketoken') ?>?id=" + id);
+    req.send();
+    return true;
+}
 </script>
 <h2>Zrenderer &mdash; Access tokens</h2>
 <?php if (isset($_POST['modify'])): ?>
@@ -164,7 +198,7 @@ function toggleToken(btn) {
             <td><?php echo printProperties($token->properties) ?></td>
             <td>
             <?php if (!isset($token->isAdmin) || $token->isAdmin !== true): ?>
-                <button onclick="modifyToken(<?php echo $token->id ?>);">Modify</button> <button>Delete</button>
+            <button onclick="modifyToken(<?php echo $token->id ?>);">Modify</button> <button onclick="revokeToken(<?php echo $token->id ?>, this);">Delete</button>
             <?php endif ?>
             </td>
         </tr>
