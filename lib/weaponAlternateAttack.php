@@ -15,11 +15,14 @@ function isAlternateAttack($job, $sex, $weapon) {
         case 272:
         case 273:
         case 274:
+        case 354:
+        case 355:
             return $weapon == 22;
         case 24:
         case 265:
         case 278:
         case 279:
+        case 356:
             switch($weapon) {
                 case 18:
                 case 19:
@@ -154,6 +157,7 @@ function isAlternateAttack($job, $sex, $weapon) {
         case 290:
         case 292:
         case 305:
+        case 353:
             switch($weapon) {
                 case 10:
                 case 23:
@@ -251,6 +255,7 @@ function isAlternateAttack($job, $sex, $weapon) {
         case 95:
         case 240:
         case 241:
+        case 357:
             switch($weapon) {
                 case 1:
                     return true;
