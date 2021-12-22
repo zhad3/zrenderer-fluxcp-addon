@@ -6,7 +6,12 @@ require_once Flux::config('Zren.Util');
 
 ob_clean();
 
-$charName = preg_replace('/[^0-9a-zA-Z ]/', '', $params->get('name'));
+$charName = $params->get('name');
+
+if (empty($charName) || strlen($charName) > 30 || strlen($charName) == 0) {
+    ZrenUtil::serveDefaultImage();
+    exit;
+}
 
 $groupName = '';
 if ($params->get('group') !== null) {

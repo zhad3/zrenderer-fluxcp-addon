@@ -1,7 +1,7 @@
 <?php
 return array(
     'Zren' => array(
-        'Host' => getenv('GATEWAY_HOST'),
+        'Host' => 'localhost',
         'Port' => 11011,
         'AccessTokens' => array(
             'ADMIN' => '',
@@ -9,20 +9,16 @@ return array(
             'RENDERING' => ''
         ),
         'cache' => array(
-            'enabled' => false,
+            'enabled' => true,
             'expiration' => 24 * 60 * 60 // Time in seconds when the image expires after it has been created
         ),
 
         'rendering' => array(
             'default' => array(
                 'canvas' => '150x150+75+125',
-                'action' => 'ATTACK',
+                'action' => 'STAND',
                 'direction' => 0,
                 'headdir' => 0
-            ),
-            'pvp' => array(
-                'canvas' => '150x150+75+125',
-                'action' => 'ATTACKREADY'
             )
         ),
 
