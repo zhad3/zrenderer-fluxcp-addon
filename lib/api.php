@@ -14,10 +14,13 @@ class ZrenApi {
         $payload = ZrenApi::dataToJsonPayload($charData, $groupName);
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::renderUri());
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/render&downloadimage');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.RENDERING')
+        ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         return ZrenApi::sendRequest($ch);
@@ -63,7 +66,7 @@ class ZrenApi {
         ZrenApi::addToRequest($requestData, "shield", intval($charData->shield), 0);
         ZrenApi::addToRequest($requestData, "bodyPalette", intval($charData->clothes_color) - 1, -1);
         ZrenApi::addToRequest($requestData, "headPalette", intval($charData->hair_color) - 1, -1);
-        ZrenApi::addToRequest($requestData, "headdir", $headdir, 0);
+        ZrenApi::addToRequest($requestData, "headdir", $headdir, null);
         ZrenApi::addToRequest($requestData, "headgear", array(
             intval($charData->head_top),
             intval($charData->head_mid),
@@ -75,12 +78,16 @@ class ZrenApi {
 
     public static function modifyToken($id, $tokenData) {
         $payload = json_encode($tokenData);
+        $id = preg_replace("/[^0-9]/", "", $id);
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::modifyTokenUri($id));
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/admin/tokens/' . $id));
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($tokenData));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.ADMIN')
+        ));
 
         return ZrenApi::sendRequest($ch);
     }
@@ -88,44 +95,60 @@ class ZrenApi {
     public static function createToken($tokenData) {
         $payload = json_encode($tokenData);
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::createTokenUri());
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/admin/tokens'));
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($tokenData));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.ADMIN')
+        ));
 
         return ZrenApi::sendRequest($ch);
     }
 
     public static function revokeToken($id) {
+        $id = preg_replace("/[^0-9]/", "", $id);
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::revokeTokenUri($id));
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/admin/tokens/' . $id));
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.ADMIN')
+        ));
 
         return ZrenApi::sendRequest($ch);
     }
 
     public static function health() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::healthUri());
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/admin/health'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.ADMIN')
+        ));
 
         return ZrenApi::sendRequest($ch);
     }
 
     public static function tokenInfo() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::tokenInfoUri());
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/token/info'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.ADMIN')
+        ));
 
         return ZrenApi::sendRequest($ch);
     }
 
     public static function tokens() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, ZrenApi::tokensUri());
+        curl_setopt($ch, CURLOPT_URL, ZrenApi::buildUri('/admin/tokens'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'X-Accesstoken: ' . Flux::config('Zren.AccessTokens.ADMIN')
+        ));
 
         return ZrenApi::sendRequest($ch);
     }
@@ -174,39 +197,8 @@ class ZrenApi {
         return Flux::config('Zren.Host') . ':' . Flux::config('Zren.Port');
     }
 
-    private static function buildUriWithAccessToken($path, $accessToken) {
-        return ZrenApi::baseUri() . $path . '?accesstoken=' . $accessToken;
-    }
-
-    private static function renderUri() {
-        return ZrenApi::buildUriWithAccessToken('/render', Flux::config('Zren.AccessTokens.RENDERING')) .
-            '&downloadimage';
-    }
-
-    private static function healthUri() {
-        return ZrenApi::buildUriWithAccessToken('/admin/health', Flux::config('Zren.AccessTokens.ADMIN'));
-    }
-
-    private static function tokenInfoUri() {
-        return ZrenApi::buildUriWithAccessToken('/token/info', Flux::config('Zren.AccessTokens.ADMIN'));
-    }
-
-    private static function tokensUri() {
-        return ZrenApi::buildUriWithAccessToken('/admin/tokens', Flux::config('Zren.AccessTokens.ADMIN'));
-    }
-
-    private static function modifyTokenUri($id) {
-        $id = preg_replace("/[^0-9]/", "", $id);
-        return ZrenApi::buildUriWithAccessToken('/admin/tokens/' . $id, Flux::config('Zren.AccessTokens.ADMIN'));
-    }
-
-    private static function createTokenUri() {
-        return ZrenApi::buildUriWithAccessToken('/admin/tokens', Flux::config('Zren.AccessTokens.ADMIN'));
-    }
-
-    private static function revokeTokenUri($id) {
-        $id = preg_replace("/[^0-9]/", "", $id);
-        return ZrenApi::buildUriWithAccessToken('/admin/tokens/' . $id, Flux::config('Zren.AccessTokens.ADMIN'));
+    private static function buildUri($path) {
+        return ZrenApi::baseUri() . $path;
     }
 }
 
